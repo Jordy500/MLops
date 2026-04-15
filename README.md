@@ -129,17 +129,6 @@ Image publiée :
 ## Dépôt Git
 
 - **Repository** : `https://github.com/Jordy500/MLops`
-
-## Livrable PDF attendu
-
-Pour le rendu final, il reste à préparer un court rapport PDF avec :
-
-- nom et prénom
-- dataset choisi
-- URL du dépôt Git
-- capture d'un push sur `feature/*`
-- capture d'un push sur `develop`
-
 ## Stack utilisée
 
 - Python
