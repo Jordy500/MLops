@@ -6,15 +6,16 @@ import os
 
 app = FastAPI(title="Wine Quality Predictor", version="1.0.0")
 
+# Dictionnaire simple à la place du LabelEncoder
+LABEL_MAP = {0: "low", 1: "medium", 2: "high"}
+
 # Chargement du modèle au démarrage
 MODEL_PATH = "model.pkl"
-ENCODER_PATH = "label_encoder.pkl"
 
-if not os.path.exists(MODEL_PATH) or not os.path.exists(ENCODER_PATH):
+if not os.path.exists(MODEL_PATH):
     raise RuntimeError("Modèle introuvable. Lance d'abord train.py.")
 
 model = joblib.load(MODEL_PATH)
-le = joblib.load(ENCODER_PATH)
 
 
 # Schéma d'entrée
@@ -54,15 +55,15 @@ def predict(features: WineFeatures):
             features.alcohol,
         ]])
 
-        pred_encoded = model.predict(data)[0]
-        pred_label = le.inverse_transform([pred_encoded])[0]
+        pred = model.predict(data)[0]
+        pred_label = LABEL_MAP[int(pred)]
         proba = model.predict_proba(data)[0]
         confidence = round(float(np.max(proba)), 4)
 
         return {
             "prediction": pred_label,
             "confidence": confidence,
-            "classes": list(le.classes_)
+            "classes": list(LABEL_MAP.values())
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

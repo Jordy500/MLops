@@ -2,7 +2,6 @@ import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, f1_score
-from sklearn.preprocessing import LabelEncoder
 import joblib
 
 # 1. Chargement du dataset
@@ -12,26 +11,22 @@ df = pd.read_csv(url, sep=";")
 print(f"Dataset chargé : {df.shape[0]} lignes, {df.shape[1]} colonnes")
 
 # 2. Prétraitement
-# On transforme la qualité en 3 classes : low (<6), medium (6), high (>6)
 def categorize(q):
     if q < 6:
-        return "low"
+        return 0  # low
     elif q == 6:
-        return "medium"
+        return 1  # medium
     else:
-        return "high"
+        return 2  # high
 
 df["quality_label"] = df["quality"].apply(categorize)
 
 X = df.drop(columns=["quality", "quality_label"])
 y = df["quality_label"]
 
-le = LabelEncoder()
-y_encoded = le.fit_transform(y)
-
 # 3. Split
 X_train, X_test, y_train, y_test = train_test_split(
-    X, y_encoded, test_size=0.2, random_state=42
+    X, y, test_size=0.2, random_state=42
 )
 
 # 4. Entraînement
@@ -46,9 +41,7 @@ f1 = f1_score(y_test, y_pred, average="weighted")
 print(f"Accuracy : {acc:.4f}")
 print(f"F1-score : {f1:.4f}")
 
-# 6. Sauvegarde du modèle et de l'encodeur
+# 6. Sauvegarde du modèle uniquement
 joblib.dump(model, "model.pkl")
-joblib.dump(le, "label_encoder.pkl")
 
 print("Modèle sauvegardé : model.pkl")
-print("Encodeur sauvegardé : label_encoder.pkl")
