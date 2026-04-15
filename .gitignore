@@ -2,6 +2,7 @@
 __pycache__/
 *.py[codz]
 *$py.class
+.DS_Store
 
 # C extensions
 *.so
@@ -209,4 +210,5 @@ __marimo__/
 /mlops
 model.pkl
 label_encoder.pkl
+rapport_mlops.html
 
