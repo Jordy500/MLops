@@ -1,4 +1,4 @@
-# Mini projet MLOps - Wine Quality
+# Projet MLOps - Wine Quality
 
 Ce dépôt implémente un mini projet MLOps complet autour du dataset **Wine Quality Red**.
 
