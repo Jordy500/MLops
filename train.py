@@ -1,47 +1,69 @@
+from pathlib import Path
+
+import joblib
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, f1_score
-import joblib
+from sklearn.model_selection import train_test_split
 
-# 1. Chargement du dataset
-url = "https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-red.csv"
-df = pd.read_csv(url, sep=";")
+DATASET_URL = "https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-red.csv"
+BASE_DIR = Path(__file__).resolve().parent
+MODEL_PATH = BASE_DIR / "model.pkl"
 
-print(f"Dataset chargé : {df.shape[0]} lignes, {df.shape[1]} colonnes")
 
-# 2. Prétraitement
-def categorize(q):
-    if q < 6:
-        return 0  # low
-    elif q == 6:
-        return 1  # medium
-    else:
-        return 2  # high
+def categorize_quality(quality_value: int) -> int:
+    if quality_value < 6:
+        return 0
+    if quality_value == 6:
+        return 1
+    return 2
 
-df["quality_label"] = df["quality"].apply(categorize)
 
-X = df.drop(columns=["quality", "quality_label"])
-y = df["quality_label"]
+def load_dataset() -> pd.DataFrame:
+    dataframe = pd.read_csv(DATASET_URL, sep=";")
+    dataframe = dataframe.rename(columns=lambda column: column.strip().replace(" ", "_"))
+    print(f"Dataset chargé : {dataframe.shape[0]} lignes, {dataframe.shape[1]} colonnes")
+    return dataframe
 
-# 3. Split
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42
-)
 
-# 4. Entraînement
-model = RandomForestClassifier(n_estimators=100, random_state=42)
-model.fit(X_train, y_train)
+def train_model() -> None:
+    dataframe = load_dataset()
+    dataframe["quality_label"] = dataframe["quality"].apply(categorize_quality)
 
-# 5. Évaluation
-y_pred = model.predict(X_test)
-acc = accuracy_score(y_test, y_pred)
-f1 = f1_score(y_test, y_pred, average="weighted")
+    features = dataframe.drop(columns=["quality", "quality_label"])
+    target = dataframe["quality_label"]
+    feature_names = list(features.columns)
 
-print(f"Accuracy : {acc:.4f}")
-print(f"F1-score : {f1:.4f}")
+    X_train, X_test, y_train, y_test = train_test_split(
+        features,
+        target,
+        test_size=0.2,
+        random_state=42,
+        stratify=target,
+    )
 
-# 6. Sauvegarde du modèle uniquement
-joblib.dump(model, "model.pkl")
+    model = RandomForestClassifier(n_estimators=100, random_state=42)
+    model.fit(X_train, y_train)
 
-print("Modèle sauvegardé : model.pkl")
+    predictions = model.predict(X_test)
+    accuracy = accuracy_score(y_test, predictions)
+    f1 = f1_score(y_test, predictions, average="weighted")
+
+    print(f"Accuracy : {accuracy:.4f}")
+    print(f"F1-score : {f1:.4f}")
+
+    artifact = {
+        "model": model,
+        "feature_names": feature_names,
+        "metrics": {
+            "accuracy": accuracy,
+            "f1_score": f1,
+        },
+    }
+    joblib.dump(artifact, MODEL_PATH)
+
+    print(f"Modèle sauvegardé : {MODEL_PATH}")
+
+
+if __name__ == "__main__":
+    train_model()

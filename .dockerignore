@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.git/
+.gitignore
+mlops/
+.env
+.venv/
+venv/
+README.md
+label_encoder.pkl
